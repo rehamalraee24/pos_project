@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,27 +22,52 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String transAmount = "";
+  String transResult = "";
+
   final GlobalKey webViewKey = GlobalKey();
-  final MethodChannel platform = MethodChannel('aumet.pos');
-  void fetchDataFromNative() async {
+  final MethodChannel platform = const MethodChannel('aumet.pos');
+  Future<String> callSaleAPI() async {
     try {
-      final String result = await platform.invokeMethod('getDataFromNative',{"amount":"5000"});
-      print('Result from Native: $result');
+      transResult =
+          await platform.invokeMethod('sale', {"amount": transAmount});
+      print('Result from Native: $transResult');
+      return "success";
     } on PlatformException catch (e) {
       print('Error: ${e.message}');
+      return "";
+    }
+  }
+
+  result(dynamic arg) {
+    webViewController!.evaluateJavascript(
+      source: 'posTerminalResponse("${arg.arguments}");',
+    );
+  }
+
+  Future<String> callScanAPI() async {
+    try {
+      final String result = await platform.invokeMethod('scan');
+      print('barcode from Native: $result');
+      return result;
+    } on PlatformException catch (e) {
+      print('Error: ${e.message}');
+      return '';
     }
   }
 
   InAppWebViewController? webViewController;
   InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
       crossPlatform: InAppWebViewOptions(
+        javaScriptEnabled: true,
         // debuggingEnabled: true,
         useShouldOverrideUrlLoading: true,
         mediaPlaybackRequiresUserGesture: false,
       ),
       android: AndroidInAppWebViewOptions(
-        useHybridComposition: true,
-      ),
+          useHybridComposition: true,
+          safeBrowsingEnabled: false,
+          mixedContentMode: AndroidMixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW),
       ios: IOSInAppWebViewOptions(
         allowsInlineMediaPlayback: true,
       ));
@@ -54,7 +80,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
+    platform.setMethodCallHandler((call) => result(call));
     pullToRefreshController = PullToRefreshController(
       options: PullToRefreshOptions(
         color: Colors.blue,
@@ -83,35 +109,47 @@ class _MyAppState extends State<MyApp> {
         child: InAppWebView(
           key: webViewKey,
           initialUrlRequest: URLRequest(
-            url: Uri.parse("https://ksa.erpstg.aumet.com/POSterminal?noSearch"),
+            url: Uri.parse("https://ksa.erpstg.aumet.com/POSterminal"),
           ),
           initialOptions: options,
           pullToRefreshController: pullToRefreshController,
           onWebViewCreated: (controller) async {
             webViewController = controller;
-
-            String barcodeScanRes = '';
-
-            // Register a JavaScript handler with name "Barcode"
+            String barcodeScanRes =
+                ''; // Register a JavaScript handler with name "Barcode"
             controller.addJavaScriptHandler(
               handlerName: 'Barcode',
               callback: (args) async {
                 // Print arguments coming from the JavaScript side!
-                barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-                  '#ff6666',
-                  'Cancel',
-                  true,
-                  ScanMode.BARCODE,
-                );
-                print(barcodeScanRes);
-                fetchDataFromNative();
-                // Call the JavaScript function onScanned with the scanned result
-                controller.evaluateJavascript(
-                  source: 'onScanned("$barcodeScanRes");',
-                );
+                // barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+                //   '#ff6666',
+                //   'Cancel',
+                //   true,
+                //   ScanMode.BARCODE,
+                // );
+                barcodeScanRes = "030768001582";
+                // barcodeScanRes = await callScanAPI();
+                if (barcodeScanRes.isNotEmpty) {
+                  controller.evaluateJavascript(
+                    source: 'onScanned("$barcodeScanRes");',
+                  );
+                }
 
-                // Return data to the JavaScript side if needed
-                return null;
+                // return null;
+              },
+            );
+            controller.addJavaScriptHandler(
+              handlerName: 'Checkout',
+              callback: (args) async {
+                ///TODO: get amount
+                transAmount = args[0].toString();
+                await callSaleAPI().then((transResult) {
+                  if (transResult == "success") {
+                    controller.evaluateJavascript(
+                      source: 'posTerminalResponse("$transResult");',
+                    );
+                  }
+                });
               },
             );
           },
