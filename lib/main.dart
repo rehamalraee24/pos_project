@@ -45,6 +45,15 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  barcodeReader(dynamic barcode) {
+    String read = barcode.arguments;
+    if (read.isNotEmpty) {
+      webViewController!.evaluateJavascript(
+        source: 'onScanned("$read");',
+      );
+    }
+  }
+
   Future<String> callScanAPI() async {
     try {
       final String result = await platform.invokeMethod('scan');
@@ -80,7 +89,15 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    platform.setMethodCallHandler((call) => result(call));
+    platform.invokeMethod("loadArchFiles");
+
+    platform.setMethodCallHandler((call) {
+      if (call.method == "result") {
+        return result(call);
+      } else {
+        return barcodeReader(call);
+      }
+    });
     pullToRefreshController = PullToRefreshController(
       options: PullToRefreshOptions(
         color: Colors.blue,
@@ -109,7 +126,7 @@ class _MyAppState extends State<MyApp> {
         child: InAppWebView(
           key: webViewKey,
           initialUrlRequest: URLRequest(
-            url: Uri.parse("https://ksa.erpstg.aumet.com/POSterminal"),
+            url: Uri.parse("https://ksa.erpstg.aumet.com/POSterminal?noSearch"),
           ),
           initialOptions: options,
           pullToRefreshController: pullToRefreshController,
@@ -127,13 +144,12 @@ class _MyAppState extends State<MyApp> {
                 //   true,
                 //   ScanMode.BARCODE,
                 // );
-                barcodeScanRes = "030768001582";
-                // barcodeScanRes = await callScanAPI();
-                if (barcodeScanRes.isNotEmpty) {
-                  controller.evaluateJavascript(
-                    source: 'onScanned("$barcodeScanRes");',
-                  );
-                }
+                barcodeScanRes = await callScanAPI();
+                // if (barcodeScanRes.isNotEmpty) {
+                //   controller.evaluateJavascript(
+                //     source: 'onScanned("$barcodeScanRes");',
+                //   );
+                // }
 
                 // return null;
               },
@@ -143,13 +159,14 @@ class _MyAppState extends State<MyApp> {
               callback: (args) async {
                 ///TODO: get amount
                 transAmount = args[0].toString();
-                await callSaleAPI().then((transResult) {
-                  if (transResult == "success") {
-                    controller.evaluateJavascript(
-                      source: 'posTerminalResponse("$transResult");',
-                    );
-                  }
-                });
+                await callSaleAPI();
+                //.then((transResult) {
+                //                   if (transResult.isNotEmpty) {
+                //                     controller.evaluateJavascript(
+                //                       source: 'posTerminalResponse("$transResult");',
+                //                     );
+                //                   }
+                //                 });
               },
             );
           },
