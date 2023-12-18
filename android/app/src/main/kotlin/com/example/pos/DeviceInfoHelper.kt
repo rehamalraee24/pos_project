@@ -15,7 +15,7 @@ public class ModuleSupportedFragment{
 
     public fun getScannerType ( context:Context): String {
         appContext =context
-        deviceInfo=getDal()!!.getDeviceInfo()
+        deviceInfo=getDal(context)!!.getDeviceInfo()
         val moduleSupported: Map<Int, ESupported> = deviceInfo!!.getModuleSupported()
         val scannerType = moduleSupported.get(IDeviceInfo.MODULE_SCANNER_HW).toString()
         Log.d("scanner",scannerType)
@@ -23,11 +23,11 @@ public class ModuleSupportedFragment{
         return  scannerType
     }
 
-    fun getDal(): IDAL? {
+    fun getDal(context:Context?): IDAL? {
         if (dal == null) {
             try {
                 val start = System.currentTimeMillis()
-                dal = NeptuneLiteUser.getInstance().getDal(appContext)
+                dal = NeptuneLiteUser.getInstance().getDal(if(context == null)  appContext else context)
                 Log.i("Test", "get dal cost:" + (System.currentTimeMillis() - start) + " ms")
             } catch (e: Exception) {
                 e.printStackTrace()
