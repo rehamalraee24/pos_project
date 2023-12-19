@@ -1,4 +1,4 @@
-package com.example.pos
+package com.aumet.pos
 import android.content.Context
 import android.util.Log
 import android.widget.Toast

@@ -1,4 +1,4 @@
-package com.example.pos.modules.printer
+package com.aumet.pos.modules.printer
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.BitmapFactory.Options
 import android.util.Base64
 import android.util.Log
-import com.example.pos.ModuleSupportedFragment
+import com.aumet.pos.ModuleSupportedFragment
 import com.pax.dal.IPrinter
 import com.pax.dal.entity.EFontTypeAscii
 import com.pax.dal.entity.EFontTypeExtCode

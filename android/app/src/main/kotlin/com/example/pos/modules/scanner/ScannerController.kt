@@ -1,5 +1,5 @@
 
-package com.example.pos
+package com.aumet.pos
 
 import com.pax.dal.IScanner
 import com.pax.dal.IScanner.IScanListener
@@ -11,7 +11,7 @@ import android.util.Log
 import android.widget.Toast
 import com.pax.dal.IDAL
 import com.pax.neptunelite.api.NeptuneLiteUser
-import com.example.pos.MainActivity
+import com.aumet.pos.MainActivity
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel

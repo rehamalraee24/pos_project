@@ -1,10 +1,10 @@
-package com.example.pos
+package com.aumet.pos
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import com.example.pos.modules.printer.PrinterController
+import com.aumet.pos.modules.printer.PrinterController
 import com.pax.unifiedsdk.factory.ITransAPI
 import com.pax.unifiedsdk.factory.TransAPIFactory
 import com.pax.unifiedsdk.message.BaseResponse

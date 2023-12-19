@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -191,8 +192,9 @@ class _MyAppState extends State<MyApp> {
             return NavigationActionPolicy.ALLOW;
           },
           onLoadStop: (controller, url) async {
-            invoiceLogo = await controller.evaluateJavascript(
-                source: 'localStorage.getItem("taxes2")');
+            final appSettings = await controller.evaluateJavascript(
+                source: 'localStorage.getItem("posFormData")');
+            invoiceLogo = (json.decode(appSettings))["pos_ph_logo"];
             print('Local Storage Data: $invoiceLogo');
           },
           onLoadError: (controller, url, code, message) {
