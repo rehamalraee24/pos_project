@@ -99,10 +99,17 @@ class MainActivity : FlutterActivity() {
         val isTransResponse = baseResponse is TransResponse
         if (isTransResponse) {
             val response: TransResponse = baseResponse as TransResponse
-            Log.d("response", response.toString())
+            Log.d("response", response.getTvr())
+            Log.d("response", response.getAid())
             Toast.makeText(this, response.getRspMsg(), Toast.LENGTH_LONG).show()
+//            val bundle = Bundle()
+//            bundle.putString("Aid", "${response.getAid()}")
+//            bundle.putString("Tvr", "${response.getTvr()}")
+//            response.setExtraBundle(bundle)
+//            Log.d("bundle", bundle.toString())
+//            Log.d("response.getRspMsg().toString()", response.toString())
             setResult(RESULT_OK, data)
-            if (isPrint == false)
+              if (isPrint == false)
                 MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
                     .invokeMethod("result", "${response.toString()}")
         } else {
@@ -111,7 +118,7 @@ class MainActivity : FlutterActivity() {
             setResult(RESULT_CANCELED, data)
             if (isPrint == false)
                 MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
-                    .invokeMethod("result", "${baseResponse.getRspMsg().toString()}")
+                    .invokeMethod("result", "${baseResponse.toString()}")
         }
     }
 

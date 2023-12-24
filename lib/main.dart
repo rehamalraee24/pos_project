@@ -197,6 +197,7 @@ class _MyAppState extends State<MyApp> {
             invoiceLogo = (json.decode(appSettings))["pos_ph_logo"];
             print('Local Storage Data: $invoiceLogo');
           },
+          
           onLoadError: (controller, url, code, message) {
             pullToRefreshController.endRefreshing();
           },
